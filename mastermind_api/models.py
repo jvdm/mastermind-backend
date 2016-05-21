@@ -57,6 +57,9 @@ class Game(models.Model):
                                   for _ in range(0, 8))
         super().save(*args, **kwds)
 
+    def __str__(self):
+        return str(self.id)
+
     @property
     def engine(self):
         try:
@@ -81,32 +84,52 @@ class GamePlayer(models.Model):
 
     player = models.ForeignKey(Player)
 
-    def create_guess(self, code):
-
-        with transaction.atomic():
-            g = Guess(code=code, game_player=self)
-            other_players = self.game.players.filter(~Q(gameplayer=self))
-            last_one = True
-            for p in other_players:
-                gp = GamePlayer.objects.get(player=p, game=self.game)
-                if gp.guesses.count() == self.game.round:
-                    # not the last one
-                    last_one = False
-            if last_one:
-                self.game.round += 1
-                self.game.save()
-            g.save()
-
     class Meta:
         unique_together = ('game', 'player')
+
+    @property
+    def can_guess(self):
+        return self.game.round == self.guess_set.count()
+
+    def __str__(self):
+        return '{} playing {}'.format(self.player, self.game)
 
 
 class Guess(models.Model):
 
-    code = models.CharField(max_length=64)
+    game_player = models.ForeignKey(
+        GamePlayer)
 
-    game_player = models.ForeignKey(GamePlayer,
-                                    related_name='guesses')
+    code = models.CharField(
+        max_length=64)
+
+    exact = models.PositiveIntegerField(
+        editable=False)
+
+    near = models.PositiveIntegerField(
+        editable=False)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True)
+
+    def save(self, *args, **kwds):
+        assert self.pk is None
+        with transaction.atomic():
+            super().save(*args, **kwds)
+            # FIXME This could probably be done all in the RDBMS
+            #       using aggregation, just be patient and go read
+            #       the django docs.
+            for gp in GamePlayer.objects \
+                                .exclude(player=self.game_player.player) \
+                                .filter(game=self.game_player.game):
+                if gp.can_guess:
+                    break
+            else:
+                # Everybody has guessed, bump the game round.
+                self.game_player.game.round += 1
+                self.game_player.game.save()
 
     def __str__(self):
-        return "{} - {}".format(self.game_player.player.name, self.code)
+        return "'{}' from {} with exact {} and near {}" \
+            .format(self.code, self.game_player,
+                    self.exact, self.near)

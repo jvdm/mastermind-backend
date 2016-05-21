@@ -8,14 +8,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.serializers import ValidationError
+from rest_framework import status
 
 from .models import Game
 from .models import GamePlayer
 from .models import Player
+
 from .serializers import GameSerializer
 from .serializers import PlayerSerializer
-from .models import GamePlayer
-from .models import Guess
+from .serializers import GuessSerializer
 
 
 class GameViewSet(ModelViewSet):
@@ -47,31 +48,24 @@ class GameViewSet(ModelViewSet):
                 except IntegrityError:
                     raise ValidationError(
                         "Player '{}' already in this game".format(name))
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @detail_route(methods=['post'])
     def guess(self, request, pk=None):
+
         game = self.get_object()
         if not game.started:
             raise ValidationError("Game has not started, you can't guess now")
-        code = request.data['code']
-        name = request.data['name']
 
-        if not set(code).issubset(Game.COLORS):
-            raise ValidationError("code with invalid color '{}'".format(code))
-        if len(code) < len(game.secret):
-            raise ValidationError("code '{}' is too short".format(code))
-        if len(code) > len(game.secret):
-            raise ValidationError("code '{}' is too big".format(code))
+        name = request.data.pop('name')
         try:
             gameplayer = GamePlayer.objects.get(game=game,
                                                 player__name=name)
-        except GamePlayer.DoesNotExists:
-            raise ValidationError("name {} is not valid for this "
-                                  "game".format(name))
-        if game.round != gameplayer.guesses.count():
-            raise ValidationError("cannot make a move yet")
-        gameplayer.create_guess(code)
-        exact, near = game.engine.evaluate_guess(code)
-        return Response({'result': {'exact': exact,
-                                    'near': near}})
+        except GamePlayer.DoesNotExist:
+            raise ValidationError(
+                {'name': "Player '{}' is not in this game.".format(name)})
+
+        serializer = GuessSerializer(gameplayer, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        guess = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
