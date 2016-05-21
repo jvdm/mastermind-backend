@@ -32,8 +32,18 @@ class Game(models.Model):
 
     players_count = models.PositiveIntegerField()
 
+    num_guesses = models.PositiveIntegerField(
+        default=0,
+        editable=False)
+
     players = models.ManyToManyField(
-        Player, blank=True)
+        Player,
+        blank=True,
+        through='GamePlayer')
+
+    solved = models.BooleanField(
+        default=False,
+        editable=False)
 
     _ready_events = {}
 
@@ -42,7 +52,7 @@ class Game(models.Model):
     def save(self, *args, **kwds):
         is_creating = self.pk is None
         if is_creating:
-            self.secret = ''.join(random.choice(self.COLORS)
+            self.secret = ''.join(random.choice(list(self.COLORS))
                                   for _ in range(0, 8))
         super().save(*args, **kwds)
 
@@ -66,3 +76,15 @@ class Game(models.Model):
         except KeyError:
             self._ready_events[self.pk] = Event()
             return self._ready_events[self.pk]
+
+
+class GamePlayer(models.Model):
+
+    game = models.ForeignKey(Game)
+
+    player = models.ForeignKey(Player)
+
+    guess = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ('game', 'player')
