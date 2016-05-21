@@ -42,7 +42,10 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         with transaction.atomic():
-            player = super().create(validated_data)
+            name = validated_data.pop('name')
+            player, _ = self.Meta.model.objects.get_or_create(
+                name=name,
+                defaults=validated_data)
             GamePlayer.objects.create(game=self.game, player=player)
             if self.game.players.count() == self.game.players_count:
                 self.game.all_ready_event.set()
