@@ -28,7 +28,6 @@ class GameSerializer(serializers.ModelSerializer):
         return len(obj.COLORS)
 
 
-
 class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
