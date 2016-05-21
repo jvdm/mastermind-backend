@@ -35,8 +35,6 @@ class GameViewSet(ModelViewSet):
     def guess(self, request, pk=None):
         game = self.get_object()
         code = request.data['code']
-        print(game.secret)
-        print(Game.COLORS)
         if not set(code).issubset(Game.COLORS):
             raise ValidationError("code with invalid color '{}'".format(code))
         if len(code) != len(game.secret):
