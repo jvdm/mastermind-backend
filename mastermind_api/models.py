@@ -70,6 +70,10 @@ class Game(models.Model):
     def number_of_players(self):
         return self.players.count()
 
+    @property
+    def started(self):
+        return self.number_of_players == self.players_count
+
 
 class GamePlayer(models.Model):
 
