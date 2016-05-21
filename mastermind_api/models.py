@@ -82,7 +82,5 @@ class GamePlayer(models.Model):
 
     player = models.ForeignKey(Player)
 
-    guess = models.PositiveIntegerField()
-
     class Meta:
         unique_together = ('game', 'player')
