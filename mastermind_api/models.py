@@ -1,8 +1,9 @@
 import random
+from threading import Event
 
 from django.db import models
 
-from threading import Event
+from .mastermind_engine import MastermindGameEngine
 
 
 class Player(models.Model):
@@ -16,6 +17,8 @@ class Player(models.Model):
 class Game(models.Model):
 
     """A mastermind game."""
+
+    COLORS = set('abcdefgh')
 
     created_at = models.DateTimeField(
         auto_now_add=True)
@@ -34,11 +37,23 @@ class Game(models.Model):
 
     _ready_events = {}
 
+    _engines = {}
+
     def save(self, *args, **kwds):
-        if self.pk is None:
-            self.secret = ','.join(random.choice('abcdefgh')
-                                   for _ in range(0, 8))
+        is_creating = self.pk is None
+        if is_creating:
+            self.secret = ''.join(random.choice(self.COLORS)
+                                  for _ in range(0, 8))
         super().save(*args, **kwds)
+
+    @property
+    def engine(self):
+        try:
+            return self._engines[self.pk]
+        except KeyError:
+            engine = MastermindGameEngine(self.secret)
+            self._engines[self.pk] = engine
+            return engine
 
     @property
     def number_of_players(self):

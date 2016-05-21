@@ -31,3 +31,17 @@ class GameViewSet(ModelViewSet):
             serializer.save(game)
             game.all_ready_event.wait()
         return Response(serializer.data)
+
+    @detail_route(methods=['post'])
+    def guess(self, request, pk=None):
+        game = self.get_object()
+        code = request.data['code']
+        print(game.secret)
+        print(Game.COLORS)
+        if not set(code).issubset(Game.COLORS):
+            raise ValidationError("code with invalid color '{}'".format(code))
+        if len(code) != len(game.secret):
+            raise ValidationError("code '{}' is too short".format(code))
+        exact, near = game.engine.evaluate_guess(code)
+        return Response({'result': {'exact': exact,
+                                    'near': near}})
