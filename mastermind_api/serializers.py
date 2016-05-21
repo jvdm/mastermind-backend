@@ -16,17 +16,18 @@ class GameSerializer(serializers.ModelSerializer):
         fields = ('created_at', 'players_count', 'players')
 
 
-class CreateGameSerializer(GameSerializer):
-
-    owner = serializers.CharField()
+class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('created_at', 'players_count', 'players', 'owner')
+        model = Player
+
+    def save(self, game=None):
+        if game:
+            self.game = game
+        return super().save()
 
     def create(self, validated_data):
-        owner = validated_data.pop('owner')
         with transaction.atomic():
-            game = super().create(validated_data)
-            player, _ = Player.objects.get_or_create(name=owner)
-            game.players.add(player)
-        return game
+            player = super().create(validated_data)
+            self.game.players.add(player)
+        return player

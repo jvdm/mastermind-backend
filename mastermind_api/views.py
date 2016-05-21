@@ -6,9 +6,12 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.serializers import ValidationError
 
 from .models import Game
+from .models import Player
 from .serializers import GameSerializer
+from .serializers import PlayerSerializer
 
 
 class GameViewSet(ModelViewSet):
@@ -17,13 +20,13 @@ class GameViewSet(ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
-    def perform_create(self, serializer):
-        with transaction.atomic():
-            game = serializer.save()
-
-    @detail_route(methods=['get'])
-    def join(self, request, pk):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-
+    @detail_route(methods=['post', 'get'])
+    def join(self, request, pk=None):
+        game = self.get_object()
+        if request.method == 'GET':
+            serializer = PlayerSerializer(game.players, many=True)
+        else:
+            serializer = PlayerSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(game)
         return Response(serializer.data)
