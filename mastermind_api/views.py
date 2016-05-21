@@ -53,7 +53,7 @@ class GameViewSet(ModelViewSet):
     def guess(self, request, pk=None):
         game = self.get_object()
         if not game.started:
-            raise ValidationError("Game already started, you can't join now")
+            raise ValidationError("Game has not started, you can't guess now")
         code = request.data['code']
         name = request.data['name']
 
