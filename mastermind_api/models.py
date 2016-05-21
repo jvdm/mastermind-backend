@@ -2,6 +2,8 @@ import random
 
 from django.db import models
 
+from threading import Event
+
 
 class Player(models.Model):
 
@@ -12,6 +14,7 @@ class Player(models.Model):
 
 
 class Game(models.Model):
+
     """A mastermind game."""
 
     created_at = models.DateTimeField(
@@ -29,6 +32,8 @@ class Game(models.Model):
     players = models.ManyToManyField(
         Player, blank=True)
 
+    _ready_events = {}
+
     def save(self, *args, **kwds):
         if self.pk is None:
             self.secret = ','.join(random.choice('abcdefgh')
@@ -38,3 +43,11 @@ class Game(models.Model):
     @property
     def number_of_players(self):
         return self.players.count()
+
+    @property
+    def all_ready_event(self):
+        try:
+            return self._ready_events[self.pk]
+        except KeyError:
+            self._ready_events[self.pk] = Event()
+            return self._ready_events[self.pk]

@@ -30,4 +30,6 @@ class PlayerSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             player = super().create(validated_data)
             self.game.players.add(player)
+            if self.game.players.count() == self.game.players_count:
+                self.game.all_ready_event.set()
         return player

@@ -29,4 +29,5 @@ class GameViewSet(ModelViewSet):
             serializer = PlayerSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(game)
+            game.all_ready_event.wait()
         return Response(serializer.data)
