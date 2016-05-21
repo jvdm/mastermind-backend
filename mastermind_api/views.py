@@ -12,6 +12,8 @@ from .models import Game
 from .models import Player
 from .serializers import GameSerializer
 from .serializers import PlayerSerializer
+from .models import GamePlayer
+from .models import Guess
 
 
 class GameViewSet(ModelViewSet):
@@ -35,10 +37,23 @@ class GameViewSet(ModelViewSet):
     def guess(self, request, pk=None):
         game = self.get_object()
         code = request.data['code']
+        name = request.data['name']
+
         if not set(code).issubset(Game.COLORS):
             raise ValidationError("code with invalid color '{}'".format(code))
-        if len(code) != len(game.secret):
+        if len(code) < len(game.secret):
             raise ValidationError("code '{}' is too short".format(code))
+        if len(code) > len(game.secret):
+            raise ValidationError("code '{}' is too big".format(code))
+        try:
+            gameplayer = GamePlayer.objects.get(game=game,
+                                                player__name=name)
+        except GamePlayer.DoesNotExists:
+            raise ValidationError("name {} is not valid for this "
+                                  "game".format(name))
+        if game.round != gameplayer.guesses.count():
+            raise ValidationError("cannot make a move yet")
+        gameplayer.create_guess(code)
         exact, near = game.engine.evaluate_guess(code)
         return Response({'result': {'exact': exact,
                                     'near': near}})

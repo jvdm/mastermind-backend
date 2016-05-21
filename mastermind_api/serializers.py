@@ -19,7 +19,7 @@ class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = ('id', 'created_at', 'players_count', 'players', 'colors',
-                  'code_length', 'num_guesses', 'solved')
+                  'code_length', 'round', 'solved')
         read_only_fields = ('id', 'colors')
 
     def get_colors(self, obj):
@@ -47,6 +47,4 @@ class PlayerSerializer(serializers.ModelSerializer):
                 name=name,
                 defaults=validated_data)
             GamePlayer.objects.create(game=self.game, player=player)
-            if self.game.players.count() == self.game.players_count:
-                self.game.all_ready_event.set()
         return player

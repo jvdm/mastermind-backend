@@ -1,5 +1,6 @@
 import random
-from threading import Event
+from django.db.models import Q
+from django.db import transaction
 
 from django.db import models
 
@@ -34,7 +35,7 @@ class Game(models.Model):
 
     players_count = models.PositiveIntegerField()
 
-    num_guesses = models.PositiveIntegerField(
+    round = models.PositiveIntegerField(
         default=0,
         editable=False)
 
@@ -69,14 +70,6 @@ class Game(models.Model):
     def number_of_players(self):
         return self.players.count()
 
-    @property
-    def all_ready_event(self):
-        try:
-            return self._ready_events[self.pk]
-        except KeyError:
-            self._ready_events[self.pk] = Event()
-            return self._ready_events[self.pk]
-
 
 class GamePlayer(models.Model):
 
@@ -84,5 +77,32 @@ class GamePlayer(models.Model):
 
     player = models.ForeignKey(Player)
 
+    def create_guess(self, code):
+
+        with transaction.atomic():
+            g = Guess(code=code, game_player=self)
+            other_players = self.game.players.filter(~Q(gameplayer=self))
+            last_one = True
+            for p in other_players:
+                gp = GamePlayer.objects.get(player=p, game=self.game)
+                if gp.guesses.count() == self.game.round:
+                    # not the last one
+                    last_one = False
+            if last_one:
+                self.game.round += 1
+                self.game.save()
+            g.save()
+
     class Meta:
         unique_together = ('game', 'player')
+
+
+class Guess(models.Model):
+
+    code = models.CharField(max_length=64)
+
+    game_player = models.ForeignKey(GamePlayer,
+                                    related_name='guesses')
+
+    def __str__(self):
+        return "{} - {}".format(self.game_player.player.name, self.code)
