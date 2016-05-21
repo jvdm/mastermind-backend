@@ -26,7 +26,8 @@ class Game(models.Model):
 
     players_count = models.PositiveIntegerField()
 
-    players = models.ManyToManyField(Player)
+    players = models.ManyToManyField(
+        Player, blank=True)
 
     def save(self, *args, **kwds):
         if self.pk is None:
@@ -37,4 +38,3 @@ class Game(models.Model):
     @property
     def number_of_players(self):
         return self.players.count()
-
