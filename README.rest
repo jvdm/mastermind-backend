@@ -1,2 +1,5 @@
-# mastermind-backend
-A RESTfull mastermind backend
+====================
+ mastermind-backend
+====================
+
+A RESTfull mastermind backend.
