@@ -45,8 +45,6 @@ class Game(models.Model):
         default=False,
         editable=False)
 
-    _ready_events = {}
-
     _engines = {}
 
     def save(self, *args, **kwds):
