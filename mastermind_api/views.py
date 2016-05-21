@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Game
-from .models import PlayerOnGame
 from .serializers import GameSerializer
 
 

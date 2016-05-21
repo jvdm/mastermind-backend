@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from .models import Game
 from .models import Player
-from .models import PlayerOnGame
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -29,7 +28,5 @@ class CreateGameSerializer(GameSerializer):
         with transaction.atomic():
             game = super().create(validated_data)
             player, _ = Player.objects.get_or_create(name=owner)
-            PlayerOnGame.objects.create(
-                game=game, player=player,
-                has_joined=False, is_owner=True)
+            game.players.add(player)
         return game

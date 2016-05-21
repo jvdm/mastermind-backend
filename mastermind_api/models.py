@@ -26,9 +26,7 @@ class Game(models.Model):
 
     players_count = models.PositiveIntegerField()
 
-    players = models.ManyToManyField(
-        Player,
-        through='PlayerOnGame')
+    players = models.ManyToManyField(Player)
 
     def save(self, *args, **kwds):
         if self.pk is None:
@@ -36,13 +34,7 @@ class Game(models.Model):
                                    for _ in range(0, 8))
         super().save(*args, **kwds)
 
+    @property
+    def number_of_players(self):
+        return self.players.count()
 
-class PlayerOnGame(models.Model):
-
-    game = models.ForeignKey(Game)
-
-    player = models.ForeignKey(Player)
-
-    has_joined = models.BooleanField()
-
-    is_owner = models.BooleanField()
