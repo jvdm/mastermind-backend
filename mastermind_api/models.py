@@ -3,12 +3,16 @@ import random
 from django.db import models
 
 
+class Player(models.Model):
+
+    name = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.name
+
+
 class Game(models.Model):
     """A mastermind game."""
-
-    COLORS = ('red', 'orange', 'yellow', 'blue',
-              'purple', 'brown', 'gray', 'magenta',
-              'mahogany', 'peach', 'pink', 'mango')
 
     created_at = models.DateTimeField(
         auto_now_add=True)
@@ -20,8 +24,25 @@ class Game(models.Model):
         editable=False,
         max_length=256)
 
+    players_count = models.PositiveIntegerField()
+
+    players = models.ManyToManyField(
+        Player,
+        through='PlayerOnGame')
+
     def save(self, *args, **kwds):
         if self.pk is None:
-            self.secret = ','.join(random.choice(self.COLORS)
+            self.secret = ','.join(random.choice('abcdefgh')
                                    for _ in range(0, 8))
         super().save(*args, **kwds)
+
+
+class PlayerOnGame(models.Model):
+
+    game = models.ForeignKey(Game)
+
+    player = models.ForeignKey(Player)
+
+    has_joined = models.BooleanField()
+
+    is_owner = models.BooleanField()
