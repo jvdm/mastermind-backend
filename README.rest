@@ -25,7 +25,7 @@ Documentation
 Three APIs are provides, they all receive JSON inputs, so fields below
 refers to properties of a JSON object.
 
-GET ``/games/``
+GET ``/api/games/``
     List all games.
 
     **Parameters**:
@@ -50,14 +50,14 @@ GET ``/games/``
 
     All games are returned, solved and unsolved.
 
-POST ``/games/``
+POST ``/api/games/``
     Create a new game.
 
     **Parameters**:
 
       :players_count: Number of players this game supports.
 
-    **Returns**::
+    **Returns**:
 
       { "id": <game id>
       , "created_at": <timestamp of game creation>
@@ -76,5 +76,28 @@ POST ``/games/``
     Currently there is no limit on the amount of guesses a player can
     get until he solves the challenge.
 
-GET ``/games/<game_id>``
+GET ``/api/games/<game_id>/``
     Retrieve information of a specific game.
+
+    See GET ``/api/games/`` for the object returned.
+
+POST ``/api/games/<game_id>/join/``
+    Join a game.
+
+    **Parameters**:
+
+      :name: Name of the player joining the game
+
+POST ``/api/games/<game_id>/guess/``
+    Send a guess.
+
+    **Parameters**:
+
+      :name: Name of the player
+      :code: Player guess, ex: 'abcdefgh'
+
+    **Returns**:
+        {
+            'exact': <number of exact colors
+            'near': <number of colors missed>
+        }
