@@ -73,6 +73,29 @@ class GameViewSet(ModelViewSet):
         guess = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @detail_route(methods=['post'])
+    def hint(self, request, pk=None):
+        game = self.get_object()
+        if not game.started:
+            raise ValidationError("Game has not started, you can't guess now")
+
+        name = request.data.get('name')
+        print("Name", name)
+
+        try:
+            gameplayer = GamePlayer.objects.get(game=game,
+                                                player__name=name)
+        except GamePlayer.DoesNotExist:
+            raise ValidationError(
+                {'name': "Player '{}' is not in this game.".format(name)})
+
+        if gameplayer.solved:
+            raise ValidationError("You already solved this game.")
+
+        guess = gameplayer.guess_set.all()[0]
+        return Response(dict(zip(['position', 'color'],
+                                 game.engine.hint(guess.code))))
+
 
 def mastermind(request, gameid, name):
     return render(request,

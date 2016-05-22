@@ -21,5 +21,8 @@ class MastermindGameEngine:
 
         return correct_num, incorrect_guesses_num
 
-
-
+    def hint(self, guess):
+        for i in range(len(guess)):
+            if guess[i] != self.secret[i]:
+                return i, self.secret[i]
+        return None
