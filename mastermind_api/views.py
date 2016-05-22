@@ -72,3 +72,13 @@ class GameViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         guess = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def mastermind(request, gameid, name):
+    return render(request,
+                  "mastermind_api/mastermind.html", {'gameid':gameid,
+                                                     'name':name})
+
+def mastermind_hub(request):
+    return render(request,
+                  "mastermind_api/hub.html")

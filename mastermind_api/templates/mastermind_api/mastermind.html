@@ -1,0 +1,179 @@
+<html>
+<head>
+  <style>
+    table.game { 
+      border: 0; 
+    }
+    
+    td.guess{
+      width: 25px; height: 25px; border: 3px solid black;
+      background-color: red;
+    }
+
+    td.answer {
+      width: 15px; height: 25px; border: 1px dashed black;
+    }
+
+    td.separator {
+      width: 25px; height: 25px; border: 0px;
+    }
+
+  </style>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+  rel="stylesheet" type="text/css">
+</head>
+<body>
+  <row>
+    <div class="col-md-4">
+      <h2>Mastermind</h2>
+      <p>Put your guess on the left squares by clicking on them to change the
+        color.
+        You'll receive the hints on the right squares.
+      </p>
+      <div class="controls">
+        <button id="gobtn" class="go btn btn-default">Send guess</button>
+      </div>
+      <br>
+      <div class="alert alert-danger" id="error" role="alert" style="display:none">
+        <span id="error-msg" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true">
+        </span>
+        
+      </div>
+
+      <div class="alert alert-success" id="success" role="alert" style="display:none">
+        <span id="success-msg" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true">
+        </span>
+        
+      </div>
+
+    </div>
+    <div class="col-md-8">
+      <p>
+        <table class="game">
+          <tr>
+
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="guess" color=0></td>
+            <td class="separator"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+            <td class="answer"></td>
+          </tr>
+        </table>
+      </p>
+    </div>
+  </row>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script>
+
+color_map = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+colors = ['red','orange','yellow','green','blue','violet','gold','brown'];
+
+var actual = [];
+while (actual.length < 8) {
+  actual.push(Math.floor(Math.random() * 6));
+}
+
+function next_color_id(current_id) {
+  return isNaN(current_id) ? 0 : (current_id + 1) % 8;
+}
+
+
+
+function post_guess(guesses, answers, cloned_row) {
+  var code = $.map(guesses, function(val, i){
+    return color_map[Number($(val).attr('color'))];
+  });
+
+  code = code.join("");
+
+  function process_result(data){
+    $("#error").css("display", "none");
+    $("#success").css("display", "none");
+
+    for(i=0; i < data.exact; i++){
+      answers.first().css('background-color', 'black');
+      answers = answers.slice(1);
+    }
+
+    for(i=0; i < data.near; i++){
+      answers.first().css('background-color', 'gray');
+      answers = answers.slice(1);
+    }
+
+    //check for win
+    if (data.solved) {
+      $("#success").css("display", "inline");
+      $("#success-msg").text(" You won!"); 
+      $("#gobtn").attr('disabled', 'disabled');
+    } else {
+      $('table.game').append(cloned_row);
+    }
+  }
+
+  $.post(
+    'http://mastermind-macacoprego.herokuapp.com/games/'+"{{gameid}}"+'/guess/',
+    {
+      "name": "{{name}}",
+      "code": code,
+      "dataType": "application/json"
+    }, process_result)
+  .fail(
+      function(data){
+        var response = JSON.parse(data.responseText);
+        if("non_field_errors" in response){
+          response = response['non_field_errors'][0];
+        }
+        console.log(response);
+        $("#error").css("display", "inline");
+
+        if(Array.isArray(response) && "name" in response){
+          response = response.name;
+        }
+        $("#error-msg").text(" " + response);
+      }
+  );
+}
+
+
+$('table.game').on('click', 'tr:last td.guess',
+  function() {
+    var current_id = Number($(this).attr('color'));
+    var guess = next_color_id(current_id);
+    $(this).attr('color', guess);
+    $(this).css('background-color', colors[guess]);
+  });
+
+
+$('#gobtn').click( function() {
+  var actual2 = actual.slice(0);
+  var row = $('table.game tr:last');
+  var answers = row.children('td.answer');
+  var guesses = row.children('td.guess');
+  var cloned_row = row.clone();
+
+  post_guess(guesses, answers, cloned_row);
+});
+
+// This is used to disable normal mouse-text selection.
+document.onselectstart = document.onmousedown =
+function() { return false; }
+
+</script>
+</body>
+</html>
+​

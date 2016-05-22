@@ -1,0 +1,119 @@
+<html>
+<head>
+  <style>
+    
+
+  </style>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+  rel="stylesheet" type="text/css">
+</head>
+<body>
+  <row>
+    <h2>Mastermind Hub</h2>
+  </row>
+
+  <row>
+	<div class="col-md-6">
+		
+	Enter your name: <input type="text" id="name">
+  	
+  	
+  	<br>
+  	<br>
+  	<br>
+  	
+  	<div class="alert alert-danger" id="error" role="alert" style="display:none">
+        <span id="error-msg" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true">
+        </span>
+        
+    </div>
+    </div>
+  	
+  	<div class="col-md-6">
+		Create a game! Number of players: <input type="text" id="num_players">
+		<button class="btn btn-default" id="create_game">Create</button>
+  		Games
+  		<ul id="games">
+  		</ul>
+  	</div>
+  </row>	
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script>
+  $(function() {
+  	get_games();
+  	$("#create_game").click(function(){
+  		var num_players = $("#num_players").val();
+  		var name = $("#name").val();
+  		if(name == ""){
+				$("#error").css("display", "inline");
+				$("#error-msg").text(" Insert your name");
+		} else {
+	  		$.post(
+	  			"http://mastermind-macacoprego.herokuapp.com/games/",
+	  			{"players_count": num_players})
+	  		.done(function(data){
+	  			join_game(data.id, name);
+	  		});
+  		}
+  	})
+  });
+
+function join_game(game_id, name) {
+	$.post("http://mastermind-macacoprego.herokuapp.com/games/" + game_id + "/join/",
+		{"name":name}).done(function(data){
+			window.location = "http://mastermind-macacoprego.herokuapp.com/mastermind/" + game_id + "/" + name + "/";
+		}).fail(function(data){
+			$("#error").css("display", "inline");
+			$("#error-msg").text(" " + JSON.parse(data.responseText));
+		});
+}
+
+  function get_games() {
+	$.get(
+    'http://mastermind-macacoprego.herokuapp.com/games/', 
+    {}, function(games){
+    	for(i = 0 ; i < games.length; i++) {
+    		var game = games[i];
+    		var game_info = "Game " + game.id;
+    		if(!game.solved && (game.players.length != game.players_count)){
+    			$("#games").append("<li id='"+ game.id +"'>" + game_info + "</li>");
+    		}
+    	}
+    }).done(function(data){
+    	//add hooks to join games
+    	$("#games li").each(function(index){
+    		var game_id = $(this).attr("id");
+    		
+    		$(this).on("click", function(){
+    			$("#error").css("display", "none");
+    			var name = $("#name").val();
+    			if(name == ""){
+    				$("#error").css("display", "inline");
+					$("#error-msg").text(" Insert your name");
+    			} else {
+    				join_game(game_id, name);
+    			}
+    		});
+    		
+    	});
+    })
+	  .fail(
+	      function(data){
+	        var response = JSON.parse(data.responseText);
+	        if("non_field_errors" in response){
+	          response = response['non_field_errors'][0];
+	        }
+	        console.log(response);
+	        $("#error").css("display", "inline");
+	        $("#error-msg").text(" " + response);
+	      }
+	  );	  
+  }
+  
+
+</script>
+</body>
+</html>
+​
