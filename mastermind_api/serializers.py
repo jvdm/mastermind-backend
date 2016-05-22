@@ -19,7 +19,7 @@ class GameSerializer(serializers.ModelSerializer):
 
     solved = serializers.SerializerMethodField()
 
-    players = serializers.StringRelatedField(many=True)
+    players = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Game
