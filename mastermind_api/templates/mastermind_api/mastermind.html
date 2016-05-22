@@ -126,7 +126,7 @@ function post_guess(guesses, answers, cloned_row) {
   }
 
   $.post(
-    'http://mastermind-macacoprego.herokuapp.com/games/'+"{{gameid}}"+'/guess/',
+    '/games/'+"{{gameid}}"+'/guess/',
     {
       "name": "{{name}}",
       "code": code,

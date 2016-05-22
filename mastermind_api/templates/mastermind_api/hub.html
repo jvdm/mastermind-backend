@@ -51,7 +51,7 @@
 				$("#error-msg").text(" Insert your name");
 		} else {
 	  		$.post(
-	  			"http://mastermind-macacoprego.herokuapp.com/games/",
+	  			"/games/",
 	  			{"players_count": num_players})
 	  		.done(function(data){
 	  			join_game(data.id, name);
@@ -61,9 +61,9 @@
   });
 
 function join_game(game_id, name) {
-	$.post("http://mastermind-macacoprego.herokuapp.com/games/" + game_id + "/join/",
+	$.post("/games/" + game_id + "/join/",
 		{"name":name}).done(function(data){
-			window.location = "http://mastermind-macacoprego.herokuapp.com/mastermind/" + game_id + "/" + name + "/";
+			window.location = "/mastermind/" + game_id + "/" + name + "/";
 		}).fail(function(data){
 			$("#error").css("display", "inline");
 			$("#error-msg").text(" " + JSON.parse(data.responseText));
@@ -72,7 +72,7 @@ function join_game(game_id, name) {
 
   function get_games() {
 	$.get(
-    'http://mastermind-macacoprego.herokuapp.com/games/', 
+    '/games/', 
     {}, function(games){
     	for(i = 0 ; i < games.length; i++) {
     		var game = games[i];
