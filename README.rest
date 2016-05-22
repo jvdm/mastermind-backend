@@ -25,6 +25,31 @@ Documentation
 Three APIs are provides, they all receive JSON inputs, so fields below
 refers to properties of a JSON object.
 
+GET ``/games/``
+    List all games.
+
+    **Parameters**:
+
+    ``None``
+
+    **Returns**:
+
+    List of objects for each game::
+
+      { "id": <game id>
+      , "created_at": <timestamp of game creation>
+      , "players_count": <total number of players allowed to join>
+      , "players": <list of current players (which will be always be empty on creation)>
+      , "colors": ["e","f","d","g","c","h","a","b"]
+      , "code_length": 8
+      , "round": <game rounds or turns played until now (which will be 0)>
+      , "solved" : <if the game was solved or not>
+      }
+
+    **Description**:
+
+    All games are returned, solved and unsolved.
+
 POST ``/games/``
     Create a new game.
 
@@ -50,3 +75,6 @@ POST ``/games/``
     of people allowed to join, after that no other player can join.
     Currently there is no limit on the amount of guesses a player can
     get until he solves the challenge.
+
+GET ``/games/<game_id>``
+    Retrieve information of a specific game.
