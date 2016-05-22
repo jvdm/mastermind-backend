@@ -32,6 +32,7 @@
       </p>
       <div class="controls">
         <button id="gobtn" class="go btn btn-default">Send guess</button>
+        <button id="hintbtn" class="go btn btn-default">Get Hint</button>
       </div>
       <br>
       <div class="alert alert-danger" id="error" role="alert" style="display:none">
@@ -91,8 +92,6 @@ while (actual.length < 8) {
 function next_color_id(current_id) {
   return isNaN(current_id) ? 0 : (current_id + 1) % 8;
 }
-
-
 
 function post_guess(guesses, answers, cloned_row) {
   var code = $.map(guesses, function(val, i){
@@ -168,6 +167,30 @@ $('#gobtn').click( function() {
 
   post_guess(guesses, answers, cloned_row);
 });
+
+$('#hintbtn').click(function(){
+  $("#error").css("display", "none");
+  $("#success").css("display", "none");
+
+  $.post(
+    '/api/games/'+"{{gameid}}"+'/hint/',
+    {
+      "name": "{{name}}",
+    }).done(function(data){
+      $("#success").css("display", "inline");
+      console.log(data.color);
+      $("#success-msg").text("Put the color " + colors[color_map.indexOf(data.color)] + " in position "  + (parseInt(data.position)+1));
+    }).fail(function(data){
+      $("#error").css("display", "inline");
+      $("#error-msg").text(" " + data);
+    });
+});
+
+ 
+  
+
+
+
 
 document.onselectstart = function() { return false; };
 document.onmousedown = function() { return false; };
