@@ -2,8 +2,6 @@
  mastermind-backend
 ====================
 
-See the working app here: http://mastermind-macacoprego.herokuapp.com/
-
 This is a django backend multiplayer implementation of the `Mastermind
 <https://en.wikipedia.org/wiki/Mastermind_(board_game)>`_ game in the
 form of a RESTfull API.
