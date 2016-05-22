@@ -19,6 +19,8 @@ class GameSerializer(serializers.ModelSerializer):
 
     solved = serializers.SerializerMethodField()
 
+    players = serializer.StringRelatedField()
+
     class Meta:
         model = Game
         fields = ('id', 'created_at', 'players_count', 'players', 'colors',
