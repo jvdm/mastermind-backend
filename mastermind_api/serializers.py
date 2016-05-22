@@ -17,6 +17,8 @@ class GameSerializer(serializers.ModelSerializer):
 
     code_length = serializers.SerializerMethodField()
 
+    solved = serializers.SerializerMethodField()
+
     class Meta:
         model = Game
         fields = ('id', 'created_at', 'players_count', 'players', 'colors',
@@ -28,6 +30,9 @@ class GameSerializer(serializers.ModelSerializer):
 
     def get_code_length(self, obj):
         return len(obj.COLORS)
+
+    def get_solved(self, obj):
+        return obj.is_solved
 
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -50,9 +55,14 @@ class GuessSerializer(serializers.ModelSerializer):
 
     past_results = serializers.SerializerMethodField()
 
+    num_guesses = serializers.SerializerMethodField()
+
+    solved = serializers.SerializerMethodField()
+
     class Meta:
         model = Guess
-        fields = ('code', 'exact', 'near', 'created_at', 'past_results')
+        fields = ('code', 'exact', 'near', 'created_at', 'past_results',
+                  'num_guesses', 'solved')
 
     def __init__(self, gameplayer, *args, **kwds):
         self.gameplayer = gameplayer
@@ -63,6 +73,12 @@ class GuessSerializer(serializers.ModelSerializer):
         return [{'code': g.code,
                  'exact': g.exact,
                  'near': g.near} for g in queryset]
+
+    def get_num_guesses(self, obj):
+        return self.Meta.model.objects.filter(game_player=obj.game_player).count()
+
+    def get_solved(self, obj):
+        return obj.game_player.solved
 
     def validate_code(self, code):
         if not set(code).issubset(self.gameplayer.game.COLORS):

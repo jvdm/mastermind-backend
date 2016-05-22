@@ -57,13 +57,16 @@ class GameViewSet(ModelViewSet):
         if not game.started:
             raise ValidationError("Game has not started, you can't guess now")
 
-        name = request.data.pop('name')
+        name = request.data.get('name')
         try:
             gameplayer = GamePlayer.objects.get(game=game,
                                                 player__name=name)
         except GamePlayer.DoesNotExist:
             raise ValidationError(
                 {'name': "Player '{}' is not in this game.".format(name)})
+
+        if gameplayer.solved:
+            raise ValidationError("You already solved this game.")
 
         serializer = GuessSerializer(gameplayer, data=request.data)
         serializer.is_valid(raise_exception=True)

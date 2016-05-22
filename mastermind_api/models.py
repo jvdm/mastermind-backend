@@ -44,10 +44,6 @@ class Game(models.Model):
         blank=True,
         through='GamePlayer')
 
-    solved = models.BooleanField(
-        default=False,
-        editable=False)
-
     _engines = {}
 
     def save(self, *args, **kwds):
@@ -77,12 +73,20 @@ class Game(models.Model):
     def started(self):
         return self.number_of_players == self.players_count
 
+    @property
+    def is_solved(self):
+        return self.gameplayer_set.filter(solved=True).exists()
+
 
 class GamePlayer(models.Model):
 
     game = models.ForeignKey(Game)
 
     player = models.ForeignKey(Player)
+
+    solved = models.BooleanField(
+        default=False,
+        editable=False)
 
     class Meta:
         unique_together = ('game', 'player')
@@ -113,15 +117,23 @@ class Guess(models.Model):
         auto_now_add=True)
 
     def save(self, *args, **kwds):
+
         assert self.pk is None
+
         with transaction.atomic():
             super().save(*args, **kwds)
+
+            if self.exact == len(self.game_player.game.COLORS):
+                self.game_player.solved = True
+                self.game_player.save()
+
             # FIXME This could probably be done all in the RDBMS
             #       using aggregation, just be patient and go read
             #       the django docs.
             for gp in GamePlayer.objects \
                                 .exclude(player=self.game_player.player) \
-                                .filter(game=self.game_player.game):
+                                .filter(solved=False,
+                                        game=self.game_player.game):
                 if gp.can_guess:
                     break
             else:
