@@ -12,6 +12,6 @@ router.register('games', GameViewSet)
 
 
 urlpatterns = [
-    url(r'^mastermind_hub/$', mastermind_hub),
+    url(r'^$', mastermind_hub),
     url(r'^mastermind/(?P<gameid>\d+)/(?P<name>.+)/$', mastermind),
-    url(r'^', include(router.urls))]
+    url(r'^api/', include(router.urls))]

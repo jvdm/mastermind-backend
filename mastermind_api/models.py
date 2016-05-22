@@ -93,7 +93,7 @@ class GamePlayer(models.Model):
 
     @property
     def can_guess(self):
-        return self.game.round == self.guess_set.count()
+        return self.game.round <= self.guess_set.count()
 
     def __str__(self):
         return '{} playing {}'.format(self.player, self.game)

@@ -51,7 +51,7 @@
 				$("#error-msg").text(" Insert your name");
 		} else {
 	  		$.post(
-	  			"/games/",
+	  			"/api/games/",
 	  			{"players_count": num_players})
 	  		.done(function(data){
 	  			join_game(data.id, name);
@@ -61,7 +61,7 @@
   });
 
 function join_game(game_id, name) {
-	$.post("/games/" + game_id + "/join/",
+	$.post("/api/games/" + game_id + "/join/",
 		{"name":name}).done(function(data){
 			window.location = "/mastermind/" + game_id + "/" + name + "/";
 		}).fail(function(data){
@@ -72,7 +72,7 @@ function join_game(game_id, name) {
 
   function get_games() {
 	$.get(
-    '/games/', 
+    '/api/games/', 
     {}, function(games){
     	for(i = 0 ; i < games.length; i++) {
     		var game = games[i];

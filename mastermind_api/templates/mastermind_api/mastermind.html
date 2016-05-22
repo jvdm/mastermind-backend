@@ -126,7 +126,7 @@ function post_guess(guesses, answers, cloned_row) {
   }
 
   $.post(
-    '/games/'+"{{gameid}}"+'/guess/',
+    '/api/games/'+"{{gameid}}"+'/guess/',
     {
       "name": "{{name}}",
       "code": code,
@@ -169,9 +169,9 @@ $('#gobtn').click( function() {
   post_guess(guesses, answers, cloned_row);
 });
 
-// This is used to disable normal mouse-text selection.
-document.onselectstart = document.onmousedown =
-function() { return false; }
+document.onselectstart = function() { return false; };
+document.onmousedown = function() { return false; };
+
 
 </script>
 </body>
