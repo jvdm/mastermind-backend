@@ -4,7 +4,7 @@
 
 This is a django backend multiplayer implementation of the `Mastermind
 <https://en.wikipedia.org/wiki/Mastermind_(board_game)>`_ game in the
-for o of a RESTfull API.
+form of a RESTfull API.
 
 This original game was for two players: One player becomes the
 *codemaker*, the other the *codebreaker*. The codemaker chooses a
@@ -44,7 +44,7 @@ POST ``/games/``
       , "solved" : <if the game was solved or not>
       }
 
-    **Description**
+    **Description**:
 
     Create a new game.  ``players_count`` defines the maximum amount
     of people allowed to join, after that no other player can join.
