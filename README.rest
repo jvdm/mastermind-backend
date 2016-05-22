@@ -28,11 +28,11 @@ refers to properties of a JSON object.
 POST ``/games/``
     Create a new game.
 
-    Parameters:
+    **Parameters**:
 
       :players_count: Number of players this game supports.
 
-    Returns::
+    **Returns**::
 
       { "id": <game id>
       , "created_at": <timestamp of game creation>
@@ -44,9 +44,9 @@ POST ``/games/``
       , "solved" : <if the game was solved or not>
       }
 
-    Description:
+    **Description**
 
-      Create a new game.  ``players_count`` defines the maximum amount
-      of people allowed to join, after that no other player can join.
-      Currently there is no limit on the amount of guesses a player
-      can get until he solves the challenge.
+    Create a new game.  ``players_count`` defines the maximum amount
+    of people allowed to join, after that no other player can join.
+    Currently there is no limit on the amount of guesses a player can
+    get until he solves the challenge.
