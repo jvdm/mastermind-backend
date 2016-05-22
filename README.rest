@@ -2,4 +2,51 @@
  mastermind-backend
 ====================
 
-A RESTfull mastermind backend.
+This is a django backend multiplayer implementation of the `Mastermind
+<https://en.wikipedia.org/wiki/Mastermind_(board_game)>`_ game in the
+for o of a RESTfull API.
+
+This original game was for two players: One player becomes the
+*codemaker*, the other the *codebreaker*. The codemaker chooses a
+pattern of *four* code pegscodebreaker. The codebreaker tries to guess
+the pattern, in both order and color, within twelve (or ten, or eight)
+turns.
+
+This implementation mimics the *codemaker* role and supports multiple
+concurrent *codebreakers* for each game.  This is a very simple
+implementation, with minimal interfaces, no authentication and was
+created during the participation of `macacoprego.tech
+<https://macacoprego.tech>`_ on the 2016's `vanhackathon
+<https://www.vanhack.com/hackathon/>`_.
+
+Documentation
+=============
+
+Three APIs are provides, they all receive JSON inputs, so fields below
+refers to properties of a JSON object.
+
+POST ``/games/``
+    Create a new game.
+
+    Parameters:
+
+      :players_count: Number of players this game supports.
+
+    Returns::
+
+      { "id": <game id>
+      , "created_at": <timestamp of game creation>
+      , "players_count": <total number of players allowed to join>
+      , "players": <list of current players (which will be always be empty on creation)>
+      , "colors": ["e","f","d","g","c","h","a","b"]
+      , "code_length": 8
+      , "round": <game rounds or turns played until now (which will be 0)>
+      , "solved" : <if the game was solved or not>
+      }
+
+    Description:
+
+      Create a new game.  ``players_count`` defines the maximum amount
+      of people allowed to join, after that no other player can join.
+      Currently there is no limit on the amount of guesses a player
+      can get until he solves the challenge.
